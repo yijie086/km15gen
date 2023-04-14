@@ -135,15 +135,15 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   double ymin, double ymax, double w2min, double xsmax, int rad = 0, double Ed = 10.604, str filename = "km15gen"):
 
   cdef vector[double] kine
-  cdef double costel, afac, dE1, nud, Esc, dE2, Eprime_e, E_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
-  cdef double rho, aks, delta_1, Eprime_p, pprime_p, delta_2, xs_born, xs, Q2d_tr, nu_tr
+  cdef double costel, afac, dE1, nud, Esc, dE2, Eprime_el_e, E_el_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
+  cdef double rho, aks, delta_1, Eprime_p, pprime_p, delta_2, xs_born, xs, xBd_tr, Q2d_tr, nud_tr
   cdef double V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3
   cdef double sintel, cosphe, sinphe
   cdef double vx, vy, vz
 
   vx = 0.025*(np.random.rand() - 0.5)
   vy = 0.025*(np.random.rand() - 0.5)
-  vz = -3.+np.random.rand()*5.
+  vz = -3.+(np.random.rand() - 0.5)*5.
 
   cdef int elPold  = 2*np.random.randint(2) - 1
 
@@ -161,22 +161,29 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     return 0
 
   nud = Q2d / 2. /M / xBd     
-  Esc = Ed  - nud                
+  Esc = Ed  - nud
+  costel = 1 - Q2d/(2*Ed*Esc)          
 
   if rad:
     # Follow procedure of M. Vanderhaeghen et al., PHYSICAL REVIEW C 62 025501
     afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
     dE1 = np.random.rand()**(1/afac) * Ed
-    E_e       = Ed  - dE1                            #A71
-
-    costel = 1 - Q2d/(2*E_e*Esc)
+    E_el_e       = Ed  - dE1                            #A71 
 
     if dE1 >= nud:
       return 0
 
-    Q2d_tr  = Q2d * E_e/Ed
     nud_tr  = nud - dE1
+
+    afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
+    dE2 = np.random.rand()**(1/afac) * Esc
+    Eprime_el_e = Esc + dE2
+    if dE2 >= nud_tr:
+      return 0
+    nud_tr  = nud_tr - dE2
+    Q2d_tr  = Q2d * Eprime_el_e/Esc * E_el_e/Ed
     xBd_tr  = Q2d_tr/ 2. / M / nud_tr
+
     if (xBd_tr > 1) or (xBd_tr < 0):
       return 0
 
@@ -186,22 +193,18 @@ cpdef int genOneEvent(double xBmin, double xBmax,
       return 0
     xs_born = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1)
 
-    afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
-    dE2 = np.random.rand()**(1/afac) * Esc
-    Eprime_e  = Esc - dE2
+    # costel = 1-Q2d/2/Eprime_e/E_el_e
 
-    # costel = 1-Q2d/2/Eprime_e/E_e
-
-    # eta       = E_e/Esc               #82
+    # eta       = E_el_e/Esc               #82
     # deltaEs   = eta * dE2             #82
     # delta_vvr = delta_vac + delta_vertex + delta_R #A71
     delta_vertex = alpha/np.pi * ( 1.5*np.log(Q2d/me**2) - 2 - 1./2. * np.log(Q2d/me**2)**2  + np.pi**2/6.)
     delta_vac    = alpha/np.pi * 2./3. * ( -5./3. + 1. * np.log(Q2d/me**2))
-    delta_R      = alpha/np.pi * ( - 0.5 * np.log(E_e/Eprime_e)**2 
+    delta_R      = alpha/np.pi * ( - 0.5 * np.log(Ed/Esc)**2 
                                   + 0.5 * np.log(Q2d/me**2)**2- np.pi**2./3. + spence(1-((1+costel)/2.)) )
 
     delta_vvr = alpha/np.pi * ( (3./2.+2/3.)*np.log(Q2d/me**2)
-                 -28./9. - 0.5 * np.log(E_e/Eprime_e)**2 - np.pi**2/6. + spence(1-((1+costel)/2.)) ) #cos^2(theta/2) = (1+cos theta)/2
+                 -28./9. - 0.5 * np.log(Ed/Esc)**2 - np.pi**2/6. + spence(1-((1+costel)/2.)) ) #cos^2(theta/2) = (1+cos theta)/2
 
     # rad dominated by electron side
     # deld      = np.sqrt(td)                 #A75
@@ -230,7 +233,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   # print(xsvec[0], xsmax, xsmax * np.random.rand())
   # if xs > xsmax * np.random.rand():
   if rad:
-    kine    = getphoton(xBd_tr, Q2d_tr, td, phigd, phield)
+    kine    = getphoton(xBd_tr, Q2d_tr, td, phigd, phield, Ed = Ed - dE1)
     V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3 = kine
     sintel = np.sqrt(1-costel**2)
     cosphe = np.cos(phield)
