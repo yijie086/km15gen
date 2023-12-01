@@ -136,7 +136,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
 
   cdef vector[double] kine
   cdef double costel, afac, dE1, nud, Esc, dE2, Eprime_el_e, E_el_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
-  cdef double rho, aks, delta_1, Eprime_p, pprime_p, delta_2, xs_born, xs, xBd_tr, Q2d_tr, nud_tr
+  cdef double rho, aks, delta_1, Eprime_p, pprime_p, delta_2, xs_born, xs_part, xs, xBd_tr, Q2d_tr, nud_tr
   cdef double V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3
   cdef double sintel, cosphe, sinphe
   cdef double vx, vy, vz
@@ -163,6 +163,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   nud = Q2d / 2. /M / xBd     
   Esc = Ed  - nud
   costel = 1 - Q2d/(2*Ed*Esc)          
+  xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed)
 
   if rad:
     # Follow procedure of M. Vanderhaeghen et al., PHYSICAL REVIEW C 62 025501
@@ -191,7 +192,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
       return 0
     if (abs(P1(xBd_tr, Q2d_tr, td, phigd)) < ycolcut):
       return 0
-    xs_born = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1)
+    xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1)
 
     # costel = 1-Q2d/2/Eprime_e/E_el_e
 
@@ -201,7 +202,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     delta_vertex = alpha/np.pi * ( 1.5*np.log(Q2d/me**2) - 2 - 1./2. * np.log(Q2d/me**2)**2  + np.pi**2/6.)
     delta_vac    = alpha/np.pi * 2./3. * ( -5./3. + 1. * np.log(Q2d/me**2))
     delta_R      = alpha/np.pi * ( - 0.5 * np.log(Ed/Esc)**2 
-                                  + 0.5 * np.log(Q2d/me**2)**2- np.pi**2./3. + spence(1-((1+costel)/2.)) )
+                                  + 0.5 * np.log(Q2d/me**2)**2- np.pi**2./3. + spence(1-((1+costel)/2.)) ) # the first term of delta_R used for the soft photon emission already.
 
     delta_vvr = alpha/np.pi * ( (3./2.+2/3.)*np.log(Q2d/me**2)
                  -28./9. - 0.5 * np.log(Ed/Esc)**2 - np.pi**2/6. + spence(1-((1+costel)/2.)) ) #cos^2(theta/2) = (1+cos theta)/2
@@ -218,7 +219,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     #                         - spence( 1 - (1-1/aks/aks)) +2*spence( 1 - (-1/aks)) + np.pi**2/6 ) ) #A76
     # print(dE1, dE2, delta_vertex, delta_vac, delta_R, np.exp(delta_vertex + delta_R)/(1-delta_vac * 0.5)**2, delta_vvr)
     
-    xs      = xs_born* np.exp(delta_vertex + delta_R)/(1-delta_vac * 0.5)**2
+    xs      = xs_part* np.exp(delta_vertex + delta_R)/(1-delta_vac * 0.5)**2
 
   else:
     if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
@@ -227,7 +228,6 @@ cpdef int genOneEvent(double xBmin, double xBmax,
       return 0
     xBd_tr   = xBd
     Q2d_tr   = Q2d
-    xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed)
     xs      = xs_born
 
   # print(xsvec[0], xsmax, xsmax * np.random.rand())
@@ -246,12 +246,34 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     Egam   = np.sqrt(V3gam1**2 + V3gam2**2 + V3gam3**2)
 
     with open("{}.dat".format(filename), "a") as file_out:
-      file_out.write("5   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-      file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
-      file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-      file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
-      file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
-      file_out.write("5   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
+      if (dE1>=0.1 ) and (dE2>=0.1):
+        print(dE1, dE2)
+
+        file_out.write("5   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
+        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
+        file_out.write("5   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
+      elif (dE1>=0.1) and (dE2<0.1):
+        file_out.write("4   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
+        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
+      elif (dE1<0.1) and (dE2>=0.1):
+        file_out.write("4   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
+        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
+      elif (dE1 < 0.1 ) and (dE2 < 0.1):
+        file_out.write("3   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
+        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+      else:
+        print(dE1, dE2)
 
   else:
     kine    = getphoton(xBd, Q2d, td, phigd, phield)
