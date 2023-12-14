@@ -80,7 +80,7 @@ def main(args):
     file.writelines(lines)
 
   elif args.model == 'bh':
-    dvcsgen_commands = ["dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
@@ -93,7 +93,7 @@ def main(args):
     subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
 
   elif args.model == 'vgg':
-    dvcsgen_commands = ["dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
@@ -109,24 +109,19 @@ def main(args):
 
     os.makedirs("aao_gen/build")
     os.makedirs("gen_wrapper/src")
-    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/aao_input_file_maker.py",   "gen_wrapper/src/"])
-    subprocess.run(["cp", "/work/clas12/sangbaek/aao_gen/build/aao_rad",                                                                                                   "aao_gen/build/aao_generator.exe"])
-    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/lund_filter.py",            "gen_wrapper/src/lund_filter.py"])
-    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/aao_gen.py",                "gen_wrapper/src/"])
-    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/default_generator_args.json", "."])
-    aao_gen_commands = ['gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
-    '--input_filename_rad', 'aao_rad_input.inp', '--input_filename_norad', 'aao_norad_input.inp',
+    aao_gen_commands = ['/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
+    '--input_filename_rad', './aao_rad_input.inp', '--input_filename_norad', './aao_norad_input.inp',
     '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
     '--epmin', '0.1', '--epmax', '10.604', '--fmcall', '1.0', '--boso', '1',
     '--seed', '0', '--trig', '10000', '--epirea', '1', '--physics_model_rad', '5',
     '--int_region', '".20', '.12', '.20', '.20"', '--npart_rad', '4', '--sigr_max_mult', '0.0',
     '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
     '--target_len', '5', '--target_rad', '0.43', '--cord_x', '0.0', '--cord_y', '0.0', '--cord_z', '-3',
-    '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', 'gen_wrapper/src/aao_input_file_maker.py',
-    '--precision', '5', '--maxloops', '10', '--generator_exe_path', 'aao_gen/build/aao_generator.exe',
+    '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_input_file_maker.py',
+    '--precision', '5', '--maxloops', '10', '--generator_exe_path', '/work/clas12/sangbaek/aao_gen/build/aao_generator.exe',
     '--xBmin', '{:.3f}'.format(xBmin), '--xBmax', '{:.3f}'.format(xBmax), '--w2min', '{:.3f}'.format(w2min),
     '--w2max', '50.0', '--tmin', '{:.3f}'.format(tmin), '--tmax', '{:.3f}'.format(tmax), '--filter_infile',
-    'aao_rad.lund', '--filter_outfile', 'aao_gen.dat', '--filter_exe_path', 'gen_wrapper/src/lund_filter.py',
+    './aao_rad.lund', '--filter_outfile', './aao_gen.dat', '--filter_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/lund_filter.py',
     '--outdir', '.']
     if rad:
       pass
