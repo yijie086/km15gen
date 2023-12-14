@@ -2,6 +2,8 @@ from km15gen import genOneEvent
 import argparse
 import numpy as np
 import time
+import os
+import subprocess
 
 M  = 0.938272081
 x1 = 1/2/M/8.604
@@ -38,28 +40,102 @@ newtbins = [0.11, 0.15, 0.25, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 1.79]
 
 def main(args):
 
-  M = 0.938272081 # target mass
   Ed    = args.Ed
-  xBmin = args.xBmin
-  xBmax = args.xBmax
-  Q2min = args.Q2min
-  Q2max = args.Q2max
-  tmin  = args.tmin
-  tmax  = args.tmax
+  if args.bin:
+    bin_scheme = np.loadtxt("bin_scheme.csv")
+    xBmin, xBmax, Q2min, Q2max, tmin, tmax = bin_scheme[args.bin - 1]
+  else:
+    xBmin = args.xBmin
+    xBmax = args.xBmax
+    Q2min = args.Q2min
+    Q2max = args.Q2max
+    tmin  = args.tmin
+    tmax  = args.tmax
   ymin  = args.ymin
   ymax  = args.ymax
   w2min  = args.w2min
-
+  rad = int(args.radgen)
+  trig = args.trig
+  filename = args.fname
 
   now = time.time()
-  trig = args.trig
-  num  = 0
-  while num <trig:
-    result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = 1, filename = args.fname)
-    num      = num + result
-  later = time.time()
-  print(later-now)
+  with open("{}.dat".format(filename), "w") as file_out:
+    file_out.write("")
 
+  if args.model == 'km15':
+    num  = 0
+    while num <trig:
+      result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
+      num      = num + result
+
+    later = time.time()
+    print("The time spent in generating events: {:.3f} s".format(later-now))
+    now = time.time()
+
+    # remove the last line break
+    file = open("{}.dat".format(filename), "r+")
+    lines = file.readlines()
+    lines[-1] = lines[-1][:-1]
+    file = open("{}.dat".format(filename), "w")
+    file.writelines(lines)
+
+  elif args.model == 'bh':
+    dvcsgen_commands = ["dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+      "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
+      "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
+      "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
+      "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
+      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005"]
+    if rad:
+      dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
+    dvcsgen_commands.extend(["--bh", "1"])
+    subprocess.run(dvcsgen_commands)
+    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
+
+  elif args.model == 'vgg':
+    dvcsgen_commands = ["dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+      "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
+      "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
+      "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
+      "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
+      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005"]
+    if rad:
+      dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
+    dvcsgen_commands.extend(["--bh", "3"])
+    subprocess.run(dvcsgen_commands)
+    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
+
+  elif args.model == 'pi0':
+
+    os.makedirs("aao_gen/build")
+    os.makedirs("gen_wrapper/src")
+    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/aao_input_file_maker.py",   "gen_wrapper/src/"])
+    subprocess.run(["cp", "/work/clas12/sangbaek/aao_gen/build/aao_rad",                                                                                                   "aao_gen/build/aao_generator.exe"])
+    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/lund_filter.py",            "gen_wrapper/src/lund_filter.py"])
+    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/aao_gen.py",                "gen_wrapper/src/"])
+    subprocess.run(["cp", "/work/clas12/sangbaek/analysis_tools/development/new_aao_gen_testing/aao_gen/gen_wrapper/batch_farm_executables/src/default_generator_args.json", "."])
+    aao_gen_commands = ['gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
+    '--input_filename_rad', 'aao_rad_input.inp', '--input_filename_norad', 'aao_norad_input.inp',
+    '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
+    '--epmin', '0.1', '--epmax', '10.604', '--fmcall', '1.0', '--boso', '1',
+    '--seed', '0', '--trig', '10000', '--epirea', '1', '--physics_model_rad', '5',
+    '--int_region', '".20', '.12', '.20', '.20"', '--npart_rad', '4', '--sigr_max_mult', '0.0',
+    '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
+    '--target_len', '5', '--target_rad', '0.43', '--cord_x', '0.0', '--cord_y', '0.0', '--cord_z', '-3',
+    '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', 'gen_wrapper/src/aao_input_file_maker.py',
+    '--precision', '5', '--maxloops', '10', '--generator_exe_path', 'aao_gen/build/aao_generator.exe',
+    '--xBmin', '{:.3f}'.format(xBmin), '--xBmax', '{:.3f}'.format(xBmax), '--w2min', '{:.3f}'.format(w2min),
+    '--w2max', '50.0', '--tmin', '{:.3f}'.format(tmin), '--tmax', '{:.3f}'.format(tmax), '--filter_infile',
+    'aao_rad.lund', '--filter_outfile', 'aao_gen.dat', '--filter_exe_path', 'gen_wrapper/src/lund_filter.py',
+    '--outdir', '.']
+    if rad:
+      pass
+    else:
+      print("non-radiative generator for pi0 is not needed. Exit.")
+      exit()
+    dvcsgen_commands.extend(["--bh", "3"])
+    subprocess.run(dvcsgen_commands)
+    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
 
   # if args.find_max:
   #   xs_array = []
@@ -74,7 +150,8 @@ if __name__ == '__main__':
   parser.add_argument("-Ed", "--Ed", type = float, default = 10.604)
   parser.add_argument("-trig", "--trig", type = int, default = 1)
   parser.add_argument("-fname", "--fname", type = str, default = "km15gen")
-  parser.add_argument("-bin", "--bin", type = float, default = 0.05)
+  parser.add_argument("-bin", "--bin", type = int, default = 0)
+  parser.add_argument("-model", "--model", type = str, default = 'km15')
   parser.add_argument("-xBmin", "--xBmin", type = float, default = 0.05)
   parser.add_argument("-xBmax", "--xBmax", type = float, default = 0.75)
   parser.add_argument("-Q2min", "--Q2min", type = float, default = 0.9)
@@ -84,6 +161,7 @@ if __name__ == '__main__':
   parser.add_argument("-ymin", "--ymin", type = float, default = 0.19)
   parser.add_argument("-ymax", "--ymax", type = float, default = 0.85)
   parser.add_argument("-w2min", "--w2min", type = float, default = 3.61)
+  parser.add_argument("-radgen", "--radgen", action = 'store_true')
   args = parser.parse_args()
 
   main(args)

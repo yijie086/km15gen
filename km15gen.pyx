@@ -163,6 +163,10 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   nud = Q2d / 2. /M / xBd     
   Esc = Ed  - nud
   costel = 1 - Q2d/(2*Ed*Esc)          
+  if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
+    return 0
+  if (-P1(xBd, Q2d, td, phigd) < ycolcut):
+    return 0
   xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed)
 
   if rad:
@@ -190,7 +194,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
 
     if (td < -tmin2(xBd_tr, Q2d_tr)) or (td > -tmax2(xBd_tr, Q2d_tr)):
       return 0
-    if (abs(P1(xBd_tr, Q2d_tr, td, phigd)) < ycolcut):
+    if (-P1(xBd_tr, Q2d_tr, td, phigd) < ycolcut):
       return 0
     xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1)
 
@@ -246,34 +250,30 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     Egam   = np.sqrt(V3gam1**2 + V3gam2**2 + V3gam3**2)
 
     with open("{}.dat".format(filename), "a") as file_out:
-      if (dE1>=0.1 ) and (dE2>=0.1):
-        print(dE1, dE2)
-
-        file_out.write("5   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+      if (dE1>=0.1 ) and (dE2>=0.1): #both s and p
+        file_out.write("5   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    4   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
-        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
-        file_out.write("5   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
-      elif (dE1>=0.1) and (dE2<0.1):
-        file_out.write("4   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
+        file_out.write("5   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
+      elif (dE1>=0.1) and (dE2<0.1): # s peak only
+        file_out.write("4   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    2   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
-        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
-      elif (dE1<0.1) and (dE2>=0.1):
-        file_out.write("4   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
+      elif (dE1<0.1) and (dE2>=0.1): # p peak only
+        file_out.write("4   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    3   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
-        file_out.write("4   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
-      elif (dE1 < 0.1 ) and (dE2 < 0.1):
-        file_out.write("3   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-        file_out.write("1  {: .4f}  1   11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
+      elif (dE1 < 0.1 ) and (dE2 < 0.1): # nonrad
+        file_out.write("3   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("1  {: .4f}  1   11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
-      else:
-        print(dE1, dE2)
+        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
 
   else:
     kine    = getphoton(xBd, Q2d, td, phigd, phield)
@@ -284,11 +284,12 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     El     = np.sqrt(V3l1**2 + V3l2**2 + V3l3**2)
     Ep     = np.sqrt(V3p1**2 + V3p2**2 + V3p3**2 + M**2)
     Egam   = np.sqrt(V3gam1**2 + V3gam2**2 + V3gam3**2)
-    with open("test.data", "a") as file_out:
-      file_out.write("3   1   1    0.0   {}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
-      file_out.write("1  {: .4f}  1     11   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
+    xs     = xs_born
+    with open("{}.dat".format(filename), "a") as file_out:
+      file_out.write("3   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+      file_out.write("1  {: .4f}  1     11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
       file_out.write("2  {: .4f}  1   2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-      file_out.write("3   1.    1     22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+      file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
   return 1
 
 cpdef vector[double] bhdvcs(double xBd, double Q2d, double td, double phigd, int elPold, int rad = 0, double Ed = 10.604):
