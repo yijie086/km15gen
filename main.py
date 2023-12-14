@@ -90,7 +90,6 @@ def main(args):
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "1"])
     subprocess.run(dvcsgen_commands)
-    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
 
   elif args.model == 'vgg':
     dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
@@ -103,7 +102,6 @@ def main(args):
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "3"])
     subprocess.run(dvcsgen_commands)
-    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
 
   elif args.model == 'pi0':
 
