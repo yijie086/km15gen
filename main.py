@@ -105,8 +105,6 @@ def main(args):
 
   elif args.model == 'pi0':
 
-    os.makedirs("aao_gen/build")
-    os.makedirs("gen_wrapper/src")
     aao_gen_commands = ['/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
     '--input_filename_rad', './aao_rad_input.inp', '--input_filename_norad', './aao_norad_input.inp',
     '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
