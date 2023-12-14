@@ -110,7 +110,7 @@ def main(args):
     '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
     '--epmin', '0.1', '--epmax', '10.604', '--fmcall', '1.0', '--boso', '1',
     '--seed', '0', '--trig', '10000', '--epirea', '1', '--physics_model_rad', '5',
-    '--int_region', '".20', '.12', '.20', '.20"', '--npart_rad', '4', '--sigr_max_mult', '0.0',
+    '--int_region', '".20, .12, .20, .20"', '--npart_rad', '4', '--sigr_max_mult', '0.0',
     '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
     '--target_len', '5', '--target_rad', '0.43', '--cord_x', '0.0', '--cord_y', '0.0', '--cord_z', '-3',
     '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_input_file_maker.py',
