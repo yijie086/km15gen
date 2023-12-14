@@ -114,7 +114,7 @@ def main(args):
     '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
     '--target_len', '5', '--target_rad', '0.43', '--cord_x', '0.0', '--cord_y', '0.0', '--cord_z', '-3',
     '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_input_file_maker.py',
-    '--precision', '5', '--maxloops', '10', '--generator_exe_path', '/work/clas12/sangbaek/aao_gen/build/aao_generator.exe',
+    '--precision', '5', '--maxloops', '10', '--generator_exe_path', '/work/clas12/sangbaek/aao_gen/aao_rad/build/aao_rad',
     '--xBmin', '{:.3f}'.format(xBmin), '--xBmax', '{:.3f}'.format(xBmax), '--w2min', '{:.3f}'.format(w2min),
     '--w2max', '50.0', '--tmin', '{:.3f}'.format(tmin), '--tmax', '{:.3f}'.format(tmax), '--filter_infile',
     './aao_rad.lund', '--filter_outfile', './aao_gen.dat', '--filter_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/lund_filter.py',
