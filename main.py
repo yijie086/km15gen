@@ -126,9 +126,7 @@ def main(args):
     else:
       print("non-radiative generator for pi0 is not needed. Exit.")
       exit()
-    dvcsgen_commands.extend(["--bh", "3"])
-    subprocess.run(dvcsgen_commands)
-    subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
+    subprocess.run(aao_gen_commands)
 
   # if args.find_max:
   #   xs_array = []
