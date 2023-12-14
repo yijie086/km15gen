@@ -80,7 +80,7 @@ def main(args):
     file.writelines(lines)
 
   elif args.model == 'bh':
-    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
@@ -93,7 +93,7 @@ def main(args):
     subprocess.run(["mv", "dvcsgen.dat", "{}.dat".format(filename)])
 
   elif args.model == 'vgg':
-    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
+    dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
