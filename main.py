@@ -42,7 +42,7 @@ def main(args):
 
   Ed    = args.Ed
   if args.bin:
-    bin_scheme = np.loadtxt("bin_scheme.csv")
+    bin_scheme = np.loadtxt("/work/clas12/sangbaek/km15gen/bin_scheme.csv")
     xBmin, xBmax, Q2min, Q2max, tmin, tmax = bin_scheme[args.bin - 1]
   else:
     xBmin = args.xBmin
