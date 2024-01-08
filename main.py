@@ -42,7 +42,7 @@ def main(args):
 
   Ed    = args.Ed
   if args.bin:
-    bin_scheme = np.loadtxt("bin_scheme.csv", sep = ',')
+    bin_scheme = np.loadtxt("/work/clas12/sangbaek/km15gen/bin_scheme.csv", delimiter = ',')
     xBmin, xBmax, Q2min, Q2max, tmin, tmax = bin_scheme[args.bin - 1]
   else:
     xBmin = args.xBmin
@@ -58,11 +58,11 @@ def main(args):
   trig = args.trig
   filename = args.fname
 
-  now = time.time()
-  with open("{}.dat".format(filename), "w") as file_out:
-    file_out.write("")
 
   if args.model == 'km15':
+    now = time.time()
+    with open("{}.dat".format(filename), "w") as file_out:
+      file_out.write("")
     num  = 0
     while num <trig:
       result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
