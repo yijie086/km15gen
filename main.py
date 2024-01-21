@@ -42,7 +42,7 @@ def main(args):
 
   Ed    = args.Ed
   if args.bin:
-    bin_scheme = np.loadtxt("bin_scheme.csv", sep = ',')
+    bin_scheme = np.loadtxt("/work/clas12/sangbaek/km15gen/bin_scheme.csv", delimiter = ',')
     xBmin, xBmax, Q2min, Q2max, tmin, tmax = bin_scheme[args.bin - 1]
   else:
     xBmin = args.xBmin
@@ -58,11 +58,11 @@ def main(args):
   trig = args.trig
   filename = args.fname
 
-  now = time.time()
-  with open("{}.dat".format(filename), "w") as file_out:
-    file_out.write("")
 
   if args.model == 'km15':
+    now = time.time()
+    with open("{}.dat".format(filename), "w") as file_out:
+      file_out.write("")
     num  = 0
     while num <trig:
       result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
@@ -85,7 +85,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005"]
+      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight"]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "1"])
@@ -97,7 +97,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005"]
+      "--raster", "0.025", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight"]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "3"])
