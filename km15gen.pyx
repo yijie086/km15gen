@@ -135,7 +135,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   double ymin, double ymax, double w2min, double xsmax, int rad = 0, double Ed = 10.604, str filename = "km15gen"):
 
   cdef vector[double] kine
-  cdef double costel, afac, dE1, nud, Esc, dE2, Eprime_el_e, E_el_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
+  cdef double cl_be, costel, afac, dE1, nud, Esc, dE2, Eprime_el_e, E_el_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
   cdef double rho, aks, delta_1, Eprime_p, pprime_p, delta_2, xs_born, xs_part, xs, xBd_tr, Q2d_tr, nud_tr
   cdef double V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3
   cdef double sintel, cosphe, sinphe
@@ -143,7 +143,9 @@ cpdef int genOneEvent(double xBmin, double xBmax,
 
   vx = 0.025*(np.random.rand() - 0.5)
   vy = 0.025*(np.random.rand() - 0.5)
-  vz = -3.+(np.random.rand() - 0.5)*5.
+  vz = np.random.rand()*5. # for now there's no offset for simulating the external radiator
+
+  cl_be = Ed
 
   cdef int elPold  = 2*np.random.randint(2) - 1
 
@@ -170,12 +172,24 @@ cpdef int genOneEvent(double xBmin, double xBmax,
   xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed)
 
   if rad:
+    # external radiator
+    Ed = Ed - Ed * np.random.rand()**(3./4./ (vz/67.92 + 0.003/4.419))
+    # LH2 x0 = 67.92 cm https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
+    # Al  x0 = 4.419 cm https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
     # Follow procedure of M. Vanderhaeghen et al., PHYSICAL REVIEW C 62 025501
+    if (cl_be - Ed) >= nud:
+      return 0
+    Esc = Ed  - nud
+    costel = 1 - Q2d/(2*Ed*Esc)          
+    if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
+      return 0
+    if (-P1(xBd, Q2d, td, phigd) < ycolcut):
+      return 0
     afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
     dE1 = np.random.rand()**(1/afac) * Ed
     E_el_e       = Ed  - dE1                            #A71 
 
-    if dE1 >= nud:
+    if (cl_be - Ed) + dE1 >= nud:
       return 0
 
     nud_tr  = nud - dE1
@@ -183,7 +197,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
     dE2 = np.random.rand()**(1/afac) * Esc
     Eprime_el_e = Esc + dE2
-    if dE2 >= nud_tr:
+    if (cl_be - Ed) + dE1 + dE2 >= nud:
       return 0
     nud_tr  = nud_tr - dE2
     Q2d_tr  = Q2d * Eprime_el_e/Esc * E_el_e/Ed
@@ -235,7 +249,8 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     xs      = xs_born
 
   # print(xsvec[0], xsmax, xsmax * np.random.rand())
-  # if xs > xsmax * np.random.rand():
+  # if xs > xsmax * np.random.rand(): # this was for the rejection sampling but it's too slow for now.
+  vz = vz - 5.5
   if rad:
     kine    = getphoton(xBd_tr, Q2d_tr, td, phigd, phield, Ed = Ed - dE1)
     V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3 = kine
@@ -251,29 +266,29 @@ cpdef int genOneEvent(double xBmin, double xBmax,
 
     with open("{}.dat".format(filename), "a") as file_out:
       if (dE1>=0.1 ) and (dE2>=0.1): #both s and p
-        file_out.write("5   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("5   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs))
         file_out.write("1  {: .4f}  1   11   0    4   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
         file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
         file_out.write("5   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
       elif (dE1>=0.1) and (dE2<0.1): # s peak only
-        file_out.write("4   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("4   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs))
         file_out.write("1  {: .4f}  1   11   0    2   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
         file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz))
       elif (dE1<0.1) and (dE2>=0.1): # p peak only
-        file_out.write("4   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("4   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs))
         file_out.write("1  {: .4f}  1   11   0    3   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
         file_out.write("4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz))
       elif (dE1 < 0.1 ) and (dE2 < 0.1): # nonrad
-        file_out.write("3   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+        file_out.write("3   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs))
         file_out.write("1  {: .4f}  1   11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
         file_out.write("2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-        file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+        file_out.write("3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
 
   else:
     kine    = getphoton(xBd, Q2d, td, phigd, phield)
@@ -286,10 +301,10 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     Egam   = np.sqrt(V3gam1**2 + V3gam2**2 + V3gam3**2)
     xs     = xs_born
     with open("{}.dat".format(filename), "a") as file_out:
-      file_out.write("3   1       1  0.0{:>4}   11   10.604   1       1      {:6f}\n".format(elPold,xs))
+      file_out.write("3   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs))
       file_out.write("1  {: .4f}  1     11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz))
       file_out.write("2  {: .4f}  1   2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz))
-      file_out.write("3   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
+      file_out.write("3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  \n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz))
   return 1
 
 cpdef vector[double] bhdvcs(double xBd, double Q2d, double td, double phigd, int elPold, int rad = 0, double Ed = 10.604):
