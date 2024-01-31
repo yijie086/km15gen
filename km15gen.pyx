@@ -177,10 +177,12 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     # LH2 x0 = 67.92 cm https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
     # Al  x0 = 4.419 cm https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
     # Follow procedure of M. Vanderhaeghen et al., PHYSICAL REVIEW C 62 025501
-    if (cl_be - Ed) >= nud:
+    nud = nud - (cl_be - Ed)
+    if nud <= 0:
       return 0
-    Esc = Ed  - nud
-    costel = 1 - Q2d/(2*Ed*Esc)          
+    Q2d = Q2d * Ed/cl_be
+    xBd = Q2d / 2. /M /nud
+
     if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
       return 0
     if (-P1(xBd, Q2d, td, phigd) < ycolcut):
@@ -189,7 +191,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     dE1 = np.random.rand()**(1/afac) * Ed
     E_el_e       = Ed  - dE1                            #A71 
 
-    if (cl_be - Ed) + dE1 >= nud:
+    if dE1 >= nud:
       return 0
 
     nud_tr  = nud - dE1
@@ -197,7 +199,7 @@ cpdef int genOneEvent(double xBmin, double xBmax,
     afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
     dE2 = np.random.rand()**(1/afac) * Esc
     Eprime_el_e = Esc + dE2
-    if (cl_be - Ed) + dE1 + dE2 >= nud:
+    if dE1 + dE2 >= nud:
       return 0
     nud_tr  = nud_tr - dE2
     Q2d_tr  = Q2d * Eprime_el_e/Esc * E_el_e/Ed
