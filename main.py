@@ -67,7 +67,6 @@ def main(args):
     result = ""
     while num <trig:
       this_result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
-      print(this_result)
       if this_result:
         num      = num + 1
         result   = result + this_result
@@ -77,7 +76,6 @@ def main(args):
     now = time.time()
 
     # remove the last line break
-    print(result)
     with open("{}.dat".format(filename), "w") as fp:
       fp.write(result[:-1])
 
