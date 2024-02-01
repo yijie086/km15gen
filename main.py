@@ -64,20 +64,22 @@ def main(args):
     with open("{}.dat".format(filename), "w") as file_out:
       file_out.write("")
     num  = 0
+    result = ""
     while num <trig:
-      result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
-      num      = num + result
+      this_result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
+      print(this_result)
+      if this_result:
+        num      = num + 1
+        result   = result + this_result
 
     later = time.time()
     print("The time spent in generating events: {:.3f} s".format(later-now))
     now = time.time()
 
     # remove the last line break
-    file = open("{}.dat".format(filename), "r+")
-    lines = file.readlines()
-    lines[-1] = lines[-1][:-1]
-    file = open("{}.dat".format(filename), "w")
-    file.writelines(lines)
+    print(result)
+    with open("{}.dat".format(filename), "w") as fp:
+      fp.write(result[:-1])
 
   elif args.model == 'bh':
     dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
