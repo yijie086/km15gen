@@ -140,6 +140,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   cdef double V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3
   cdef double sintel, cosphe, sinphe
   cdef double vx, vy, vz
+  cdef double radQ2, radxB, radEd
   cdef str result
 
   result = ""
@@ -159,6 +160,8 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   cdef double td      = tmin + (tmax - tmin) * np.random.rand()
   cdef double phigd     = np.random.rand()*2.*np.pi
   cdef double phield    = np.random.rand()*2.*np.pi
+  radQ2d = Q2d
+  radxBd = xBd
 
   if (yd < ymin) or (yd > ymax):
     return result
@@ -258,7 +261,9 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   vz = vz - 5.5
   if rad:
     kine    = getphoton(xBd_tr, Q2d_tr, td, phigd, phield, Ed = Ed - dE1)
-    V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3 = kine
+    V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3, costgg = kine
+    if costgg>1:
+      return result
     sintel = np.sqrt(1-costel**2)
     cosphe = np.cos(phield)
     sinphe = np.sin(phield)
@@ -272,26 +277,26 @@ cpdef str genOneEvent(double xBmin, double xBmax,
     with open("{}.dat".format(filename), "a") as file_out:
       if (dE1>=0.1 ) and (dE2>=0.1): #both s and p
         result = result + "5   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs)
-        result = result + "1  {: .4f}  1   11   0    4   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz)
+        result = result + "1  {: .4f}  1   11   0    4   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(radxBd, V3l1, V3l2, V3l3, radQ2d, td, vx, vy, vz)
         result = result + "2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz)
         result = result + "3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz)
         result = result + "4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz)
         result = result + "5   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz)
       elif (dE1>=0.1) and (dE2<0.1): # s peak only
         result = result + "4   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs)
-        result = result + "1  {: .4f}  1   11   0    2   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz)
+        result = result + "1  {: .4f}  1   11   0    2   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(radxBd, V3l1, V3l2, V3l3, radQ2d, td, vx, vy, vz)
         result = result + "2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz)
         result = result + "3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz)
         result = result + "4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(0, 0, dE1, dE1, 0, vx, vy, vz)
       elif (dE1<0.1) and (dE2>=0.1): # p peak only
         result = result + "4   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs)
-        result = result + "1  {: .4f}  1   11   0    3   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz)
+        result = result + "1  {: .4f}  1   11   0    3   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(radxBd, V3l1, V3l2, V3l3, radQ2d, td, vx, vy, vz)
         result = result + "2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz)
         result = result + "3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz)
         result = result + "4   1.      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(dE2*sintel*cosphe, dE2*sintel*sinphe, dE2*costel, dE2, 0, vx, vy, vz)
       elif (dE1 < 0.1 ) and (dE2 < 0.1): # nonrad
         result = result + "3   1       1  0.0{:>4}   11   {:.3f}   1       1      {:6f}\n".format(elPold,cl_be,xs)
-        result = result + "1  {: .4f}  1   11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(xBd, V3l1, V3l2, V3l3, Q2d, td, vx, vy, vz)
+        result = result + "1  {: .4f}  1   11   0    1   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(radxBd, V3l1, V3l2, V3l3, radQ2d, td, vx, vy, vz)
         result = result + "2  {: .4f}  1 2212   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(phigd, V3p1, V3p2, V3p3, xBd_tr, Q2d_tr, vx, vy, vz)
         result = result + "3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz)
 
@@ -402,7 +407,7 @@ cpdef vector[double] getphoton(double xBd, double Q2d, double td, double phigd, 
   cdef double Ep = M + td/2/M
   cdef double Egam = nud -  td/2/M
 
-  cdef double qmod = np.sqrt(nud**2 + Q2d)
+  cdef double qmod = np.sqrt(V3q1**2 + V3q2**2 + V3q3**2)
   cdef double costVq = (Ed - Esc * costel)/qmod
   cdef double sintVq = np.sqrt(1 - costVq**2)
 
@@ -431,5 +436,6 @@ cpdef vector[double] getphoton(double xBd, double Q2d, double td, double phigd, 
   vec.push_back(V3p1) 
   vec.push_back(V3p2) 
   vec.push_back(V3p3)
+  vec.push_back(costgg)
 
   return vec
