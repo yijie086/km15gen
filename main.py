@@ -42,7 +42,10 @@ def main(args):
 
   Ed    = args.Ed
   if args.bin:
-    bin_scheme = np.loadtxt("{}/bin_scheme.csv".format(os.path.dirname(os.path.realpath(__file__))), delimiter = ',')
+    if args.fringe:
+      bin_scheme = np.loadtxt("{}/fringe_bin_scheme.csv".format(os.path.dirname(os.path.realpath(__file__))), delimiter = ',')
+    else:
+      bin_scheme = np.loadtxt("{}/bin_scheme.csv".format(os.path.dirname(os.path.realpath(__file__))), delimiter = ',')
     xBmin, xBmax, Q2min, Q2max, tmin, tmax = bin_scheme[args.bin - 1]
   else:
     xBmin = args.xBmin
@@ -151,6 +154,7 @@ if __name__ == '__main__':
   parser.add_argument("-ymax", "--ymax", type = float, default = 0.85)
   parser.add_argument("-w2min", "--w2min", type = float, default = 3.61)
   parser.add_argument("-radgen", "--radgen", action = 'store_true')
+  parser.add_argument("-fringe", "--fringe", action = 'store_true')
   args = parser.parse_args()
 
   main(args)
