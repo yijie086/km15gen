@@ -155,6 +155,7 @@ if __name__ == '__main__':
   parser.add_argument("-w2min", "--w2min", type = float, default = 3.61)
   parser.add_argument("-radgen", "--radgen", action = 'store_true')
   parser.add_argument("-fringe", "--fringe", action = 'store_true')
+  parser.add_argument("-seed", "--seed", type = int)
   args = parser.parse_args()
 
   main(args)
