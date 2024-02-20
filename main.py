@@ -88,7 +88,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight"]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "1"])
@@ -100,7 +100,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight"]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "3"])
@@ -155,7 +155,7 @@ if __name__ == '__main__':
   parser.add_argument("-w2min", "--w2min", type = float, default = 3.61)
   parser.add_argument("-radgen", "--radgen", action = 'store_true')
   parser.add_argument("-fringe", "--fringe", action = 'store_true')
-  parser.add_argument("-seed", "--seed", type = int)
+  parser.add_argument("-seed", "--seed", type = int, default = 0)
   args = parser.parse_args()
 
   main(args)
