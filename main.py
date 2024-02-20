@@ -88,7 +88,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(args.seed)]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000*args.bin+args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "1"])
@@ -100,7 +100,7 @@ def main(args):
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(args.seed)]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000*args.bin+args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "3"])
