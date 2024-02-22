@@ -83,24 +83,36 @@ def main(args):
       fp.write(result[:-1])
 
   elif args.model == 'bh':
+    if args.rad:
+      mode = 0
+      if args.fringe:
+        mode = 1
+    else:
+      mode = 2
     dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000*args.bin+args.seed)]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000000*mode+1000*args.bin+args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "1"])
     subprocess.run(dvcsgen_commands)
 
   elif args.model == 'vgg':
+    if args.rad:
+      mode = 3
+      if args.fringe:
+        mode = 4
+    else:
+      mode = 5
     dvcsgen_commands = ["/work/clas12/sangbaek/dvcsgen/dvcsgen", "--docker", "--trig", "{}".format(trig), "--beam", "{:.3f}".format(Ed),
       "--x", "{:.3f}".format(xBmin), "{:.3f}".format(xBmax),
       "--q2", "{:.3f}".format(Q2min), "{:.3f}".format(Q2max),
       "--t", "{:.3f}".format(tmin), "{:.3f}".format(tmax),
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
-      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000*args.bin+args.seed)]
+      "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000000*mode+1000*args.bin+args.seed)]
     if rad:
       dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
     dvcsgen_commands.extend(["--bh", "3"])
