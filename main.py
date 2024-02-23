@@ -83,7 +83,7 @@ def main(args):
       fp.write(result[:-1])
 
   elif args.model == 'bh':
-    if args.rad:
+    if args.radgen:
       mode = 0
       if args.fringe:
         mode = 1
@@ -101,7 +101,7 @@ def main(args):
     subprocess.run(dvcsgen_commands)
 
   elif args.model == 'vgg':
-    if args.rad:
+    if args.radgen:
       mode = 3
       if args.fringe:
         mode = 4
