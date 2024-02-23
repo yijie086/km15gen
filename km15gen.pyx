@@ -12,13 +12,16 @@ cdef double alpha = 1/137.036
 
 
 
-cpdef double printKM(double xB, double Q2, double t, double phi, int pol = 0, double E = 10.604):
+cpdef double printKM(double xB, double Q2, double t, double phi, int pol = 0, double E = 10.604, model = 'km15'):
     phi = np.pi - phi
     pt1 = g.DataPoint(xB=xB, t=-t, Q2=Q2, phi=phi,
             process='ep2epgamma', exptype='fixed target', frame ='trento',
             in1energy= E, in1charge=-1, in1polarization=pol)
     pt1.prepare()
-    return th_KM15.XS(pt1)
+    if model == 'km15':
+      return th_KM15.XS(pt1)
+    elif model == 'km15_bh':
+      return th_KM15.PreFacSigma(pt1)*th_KM15.TBH2unp(pt1)
 
 
 cpdef double nu(double xB, double Q2):
@@ -302,7 +305,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
 
   else:
     kine    = getphoton(xBd, Q2d, td, phigd, phield)
-    V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3 = kine
+    V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3, costgg = kine
     sintel = np.sqrt(1-costel**2)
     cosphe = np.cos(phield)
     sinphe = np.sin(phield)

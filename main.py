@@ -62,14 +62,14 @@ def main(args):
   filename = args.fname
 
 
-  if args.model == 'km15':
+  if 'km15' in args.model:
     now = time.time()
     with open("{}.dat".format(filename), "w") as file_out:
       file_out.write("")
     num  = 0
     result = ""
     while num <trig:
-      this_result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename)
+      this_result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename, model = args.model)
       if this_result:
         num      = num + 1
         result   = result + this_result
