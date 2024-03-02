@@ -64,8 +64,6 @@ def main(args):
 
   if 'km15' in args.model:
     now = time.time()
-    with open("{}.dat".format(filename), "w") as file_out:
-      file_out.write("")
     num  = 0
     result = ""
     while num <trig:

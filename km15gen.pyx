@@ -12,7 +12,7 @@ cdef double alpha = 1/137.036
 
 
 
-cpdef double printKM(double xB, double Q2, double t, double phi, int pol = 0, double E = 10.604, model = 'km15'):
+cpdef double printKM(double xB, double Q2, double t, double phi, int pol = 0, double E = 10.604, str model = 'km15'):
     phi = np.pi - phi
     pt1 = g.DataPoint(xB=xB, t=-t, Q2=Q2, phi=phi,
             process='ep2epgamma', exptype='fixed target', frame ='trento',
@@ -135,7 +135,7 @@ cpdef double getScale(double xBmin, double xBmax,
 
 cpdef str genOneEvent(double xBmin, double xBmax, 
   double Q2min, double Q2max, double tmin, double tmax,
-  double ymin, double ymax, double w2min, double xsmax, int rad = 0, double Ed = 10.604, str filename = "km15gen"):
+  double ymin, double ymax, double w2min, double xsmax, int rad = 0, double Ed = 10.604, str filename = "km15gen", str model = "km15"):
 
   cdef vector[double] kine
   cdef double cl_be, costel, afac, dE1, nud, Esc, dE2, Eprime_el_e, E_el_e, eta, deltaEs, delta_vertex, delta_vac, delta_R, delta_vvr, deld  
@@ -178,7 +178,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
     return result
   if (-P1(xBd, Q2d, td, phigd) < ycolcut):
     return result
-  xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed)
+  xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed, model = model)
 
   if rad:
     # external radiator
@@ -221,7 +221,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
       return result
     if (-P1(xBd_tr, Q2d_tr, td, phigd) < ycolcut):
       return result
-    xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1)
+    xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1, model = model)
 
     # costel = 1-Q2d/2/Eprime_e/E_el_e
 
