@@ -182,9 +182,9 @@ cpdef str genOneEvent(double xBmin, double xBmax,
 
   if rad:
     # external radiator
-    Ed = Ed - Ed * np.random.rand()**(3./4./ (vz/67.92 + 0.003/4.419))
-    # LH2 x0 = 67.92 cm https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
-    # Al  x0 = 4.419 cm https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
+    Ed = Ed - Ed * np.random.rand()**(3./4./ (vz/929. + 0.003/8.897))
+    # LH2 x0 = 929 cm, https://github.com/JeffersonLab/JPsiGen/blob/eb40dd934bb9f022873414a57e0dad9d1ccbcbdf/include/KinFunctions.h
+    # Al  x0 = 8.897 cm https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
     # Follow procedure of M. Vanderhaeghen et al., PHYSICAL REVIEW C 62 025501
     nud = nud - (cl_be - Ed)
     if nud <= 0:
