@@ -179,6 +179,12 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   if (-P1(xBd, Q2d, td, phigd) < ycolcut):
     return result
   xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed, model = model)
+  if np.isnan(xs_born):
+    return result
+  if np.isinf(xs_born):
+    return result
+  if xs_born == 0 :
+    return result
 
   if rad:
     # external radiator
@@ -222,6 +228,12 @@ cpdef str genOneEvent(double xBmin, double xBmax,
     if (-P1(xBd_tr, Q2d_tr, td, phigd) < ycolcut):
       return result
     xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1, model = model)
+    if np.isnan(xs_part):
+      return result
+    if np.isinf(xs_part):
+      return result
+    if xs_part == 0 :
+      return result
 
     # costel = 1-Q2d/2/Eprime_e/E_el_e
 
@@ -249,6 +261,12 @@ cpdef str genOneEvent(double xBmin, double xBmax,
     # print(dE1, dE2, delta_vertex, delta_vac, delta_R, np.exp(delta_vertex + delta_R)/(1-delta_vac * 0.5)**2, delta_vvr)
     
     xs      = xs_part* np.exp(delta_vertex + delta_R)/(1-delta_vac * 0.5)**2
+    if np.isnan(xs):
+      return result
+    if np.isinf(xs):
+      return result
+    if xs == 0 :
+      return result
 
   else:
     if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
