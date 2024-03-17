@@ -7,7 +7,7 @@ from gepard.fits import th_KM15
 
 cdef double M = 0.938272081 # target mass
 cdef double me = 0.5109989461 * 0.001 # electron mass
-cdef double ycolcut = 0.0005 # P1 cut
+cdef double ycolcut = 0.000001 #0.0005 # P1 cut
 cdef double alpha = 1/137.036
 
 
