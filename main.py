@@ -69,6 +69,8 @@ def main(args):
     while num <trig:
       this_result   = genOneEvent(xBmin, xBmax, Q2min, Q2max, tmin, tmax, ymin, ymax, w2min, 0,  rad = rad, Ed = Ed, filename = filename, model = args.model)
       if this_result:
+        if num%10000==0:
+          print(num)
         num      = num + 1
         result   = result + this_result
 
@@ -94,7 +96,7 @@ def main(args):
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
       "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000000*mode+1000*args.bin+args.seed)]
     if rad:
-      dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
+      dvcsgen_commands.extend(["--radgen", "--vv2cut", "99999999.9999", "--delta", "0.1", "--radstable", "--radext"])
     dvcsgen_commands.extend(["--bh", "1"])
     subprocess.run(dvcsgen_commands)
 
@@ -112,13 +114,13 @@ def main(args):
       "--gpd", "101", "--y", "{:.3f}".format(ymin), "{:.3f}".format(ymax), "--w", "{:.3f}".format(w2min),
       "--raster", "0.025", "--zpos", "-3", "--zwidth", "5", "--writef", "2", "--globalfit", "--ycol", "0.0005", "--weight", "--seed", "{}".format(1000000*mode+1000*args.bin+args.seed)]
     if rad:
-      dvcsgen_commands.extend(["--radgen", "--vv2cut", "0.6", "--delta", "0.1", "--radstable"])
+      dvcsgen_commands.extend(["--radgen", "--vv2cut", "99999999.9999", "--delta", "0.1", "--radstable", "--radext"])
     dvcsgen_commands.extend(["--bh", "3"])
     subprocess.run(dvcsgen_commands)
 
   elif args.model == 'pi0':
 
-    aao_gen_commands = ['/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
+    aao_gen_commands = ['python3', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
     '--input_filename_rad', './aao_rad_input.inp', '--input_filename_norad', './aao_norad_input.inp',
     '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
     '--epmin', '0.1', '--epmax', '10.604', '--fmcall', '1.0', '--boso', '1',
@@ -127,7 +129,7 @@ def main(args):
     '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
     '--target_len', '5', '--target_rad', '0.43', '--cord_x', '0.0', '--cord_y', '0.0', '--cord_z', '-3',
     '--physics_model_norad', '5', '--npart_norad', '3', '--input_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_input_file_maker.py',
-    '--precision', '5', '--maxloops', '10', '--generator_exe_path', '/work/clas12/sangbaek/aao_gen/aao_rad/build/aao_rad',
+    '--precision', '5', '--maxloops', '1', '--generator_exe_path', '/work/clas12/sangbaek/aao_gen/aao_rad/build/aao_rad',
     '--xBmin', '{:.3f}'.format(xBmin), '--xBmax', '{:.3f}'.format(xBmax), '--w2min', '{:.3f}'.format(w2min),
     '--w2max', '50.0', '--tmin', '{:.3f}'.format(tmin), '--tmax', '{:.3f}'.format(tmax), '--filter_infile',
     './aao_rad.lund', '--filter_outfile', './aao_gen.dat', '--filter_exe_path', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/lund_filter.py',
