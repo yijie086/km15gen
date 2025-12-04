@@ -243,10 +243,10 @@ cpdef str genOneEvent(double xBmin, double xBmax,
     delta_vertex = alpha/np.pi * ( 1.5*np.log(Q2d/me**2) - 2 - 1./2. * np.log(Q2d/me**2)**2  + np.pi**2/6.)
     delta_vac    = alpha/np.pi * 2./3. * ( -5./3. + 1. * np.log(Q2d/me**2))
     delta_R      = alpha/np.pi * ( - 0.5 * np.log(Ed/Esc)**2 
-                                  + 0.5 * np.log(Q2d/me**2)**2- np.pi**2./3. + spence(1-((1+costel)/2.)) ) # the first term of delta_R used for the soft photon emission already.
+                                  + 0.5 * np.log(Q2d/me**2)**2- np.pi**2./3. + spence((1+costel)/2.) )  # the first term of delta_R used for the soft photon emission already.
 
     delta_vvr = alpha/np.pi * ( (3./2.+2/3.)*np.log(Q2d/me**2)
-                 -28./9. - 0.5 * np.log(Ed/Esc)**2 - np.pi**2/6. + spence(1-((1+costel)/2.)) ) #cos^2(theta/2) = (1+cos theta)/2
+                 -28./9. - 0.5 * np.log(Ed/Esc)**2 - np.pi**2/6. + spence((1+costel)/2.) )  #cos^2(theta/2) = (1+cos theta)/2
 
     # rad dominated by electron side
     # deld      = np.sqrt(td)                 #A75
