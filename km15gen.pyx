@@ -29,8 +29,8 @@ cpdef double printKM(double xB, double Q2, double t, double phi, int pol = 0, do
 cpdef double nu(double xB, double Q2):
   return Q2/(2*M*xB)
 
-cpdef double y(double xB, double Q2):
-  return nu(xB, Q2)/10.604
+cpdef double y(double xB, double Q2, double Ed = 10.604):
+  return nu(xB, Q2)/Ed
 
 cpdef double W2(double xB, double Q2):
   return M*M+2.0*M*nu(xB, Q2)-Q2
@@ -62,29 +62,29 @@ cpdef double qeps2(double xB, double Q2):
 cpdef double sqeps2(double xB, double Q2):
     return np.sqrt(qeps2(xB, Q2))
 
-cpdef double y1eps(double xB, double Q2):
-    cdef double yd = y(xB, Q2)
+cpdef double y1eps(double xB, double Q2, double Ed = 10.604):
+    cdef double yd = y(xB, Q2, Ed)
     return 1 - yd - yd*yd*eps2(xB, Q2)/4
 
-cpdef double Kfac2(double xB, double Q2, double t):
+cpdef double Kfac2(double xB, double Q2, double t, double Ed = 10.604):
     cdef double tmind = -tmin2(xB, Q2)
     cdef double eps2d  = eps2(xB, Q2)
-    return (-del2q2(t, Q2))*(1 - xB)*y1eps(xB, Q2)*(1 - (tmind)/t)*(np.sqrt(1 + eps2d) + 
+    return (-del2q2(t, Q2))*(1 - xB)*y1eps(xB, Q2, Ed)*(1 - (tmind)/t)*(np.sqrt(1 + eps2d) + 
             ((4*xB*(1 - xB) + eps2d)/(4*(1 - xB)))*(-(t - (tmind))/Q2))
 
-cpdef double Kfac(double xB, double Q2, double t):
-    return np.sqrt(Kfac2(xB, Q2, t))
+cpdef double Kfac(double xB, double Q2, double t, double Ed = 10.604):
+    return np.sqrt(Kfac2(xB, Q2, t, Ed))
 
-cpdef double Jfac(double xB, double Q2, double t):
-    cdef double yd = y(xB, Q2)
+cpdef double Jfac(double xB, double Q2, double t, double Ed = 10.604):
+    cdef double yd = y(xB, Q2, Ed)
     cdef double eps2d  = eps2(xB, Q2)
     cdef double del2q2d = del2q2(t, Q2)
     return (1 - yd - yd*eps2d/2)*(1 + del2q2d) - (1 - xB)*(2 - yd)*del2q2d
 
-cpdef double P1(double xB, double Q2, double t, double phi):    
-    cdef double yd = y(xB, Q2)
+cpdef double P1(double xB, double Q2, double t, double phi, double Ed = 10.604):    
+    cdef double yd = y(xB, Q2, Ed)
     cdef double eps2d  = eps2(xB, Q2)
-    return -(Jfac(xB, Q2, t) + 2*Kfac(xB, Q2, t)*np.cos(np.pi-np.radians(phi)))/(yd*(1 + eps2d))
+    return -(Jfac(xB, Q2, t, Ed) + 2*Kfac(xB, Q2, t, Ed)*np.cos(np.pi-np.radians(phi)))/(yd*(1 + eps2d))
 
 
 cpdef double getScale(double xBmin, double xBmax, 
@@ -114,7 +114,7 @@ cpdef double getScale(double xBmin, double xBmax,
       xBd = xBmin + ix * dx
       for iq in range(1, nq+1):
         Q2d = Q2min + iq * dq
-        yd   = y(xBd, Q2d)
+        yd   = y(xBd, Q2d, Ed)
         w2d  = W2(xBd, Q2d)
         if (yd < ymin) or (yd > ymax):
           continue
@@ -127,7 +127,7 @@ cpdef double getScale(double xBmin, double xBmax,
             continue
           dt = (tmax-tmin)/nt
           td = tmin + it*dt
-          if (abs(P1(xBd, Q2d, td, 0)) < ycolcut):
+          if (abs(P1(xBd, Q2d, td, 0, Ed)) < ycolcut):
             continue
           xs = printKM(xBd, Q2d, td, 0, pol = elPold, E = Ed)
           if xs > dstot:
@@ -160,11 +160,11 @@ cpdef str genOneEvent(double xBmin, double xBmax,
 
   cdef double xBd     = xBmin + (xBmax - xBmin) * np.random.rand()
   cdef double Q2d     = Q2min + (Q2max - Q2min) * np.random.rand()
-  cdef double yd      = y(xBd, Q2d)
+  cdef double yd      = y(xBd, Q2d, Ed)
   cdef double w2d     = W2(xBd, Q2d)
   cdef double td      = tmin + (tmax - tmin) * np.random.rand()
-  cdef double phigd     = np.random.rand()*2.*np.pi
-  cdef double phield    = np.random.rand()*2.*np.pi
+  cdef double phigd   = np.random.rand()*2.*np.pi
+  cdef double phield  = np.random.rand()*2.*np.pi
   radQ2d = Q2d
   radxBd = xBd
 
@@ -178,7 +178,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   costel = 1 - Q2d/(2*Ed*Esc)          
   if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
     return result
-  if (-P1(xBd, Q2d, td, phigd) < ycolcut):
+  if (-P1(xBd, Q2d, td, phigd, Ed) < ycolcut):
     return result
   xs_born = printKM(xBd, Q2d, td, phigd, pol = elPold, E = Ed, model = model)
   if np.isnan(xs_born):
@@ -202,7 +202,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
 
     if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
       return result
-    if (-P1(xBd, Q2d, td, phigd) < ycolcut):
+    if (-P1(xBd, Q2d, td, phigd, Ed) < ycolcut):
       return result
     afac = alpha/np.pi * (np.log(Q2d/me**2) - 1.)
     dE1 = np.random.rand()**(1/afac) * Ed
@@ -227,7 +227,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
 
     if (td < -tmin2(xBd_tr, Q2d_tr)) or (td > -tmax2(xBd_tr, Q2d_tr)):
       return result
-    if (-P1(xBd_tr, Q2d_tr, td, phigd) < ycolcut):
+    if (-P1(xBd_tr, Q2d_tr, td, phigd, Ed - dE1) < ycolcut):
       return result
     xs_part = printKM(xBd_tr, Q2d_tr, td, phigd, pol = elPold, E = Ed - dE1, model = model)
     if np.isnan(xs_part):
@@ -273,7 +273,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
   else:
     if (td < -tmin2(xBd, Q2d)) or (td > -tmax2(xBd, Q2d)):
       return result
-    if (abs(P1(xBd, Q2d, td, phigd)) < ycolcut):
+    if (abs(P1(xBd, Q2d, td, phigd, Ed)) < ycolcut):
       return result
     xBd_tr   = xBd
     Q2d_tr   = Q2d
@@ -324,7 +324,7 @@ cpdef str genOneEvent(double xBmin, double xBmax,
         result = result + "3  {: .4f}      1   22   0    0   {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f} {: .4f}  {: .4f}\n".format(Ed, V3gam1, V3gam2, V3gam3, Egam, xs_born, vx, vy, vz)
 
   else:
-    kine    = getphoton(xBd, Q2d, td, phigd, phield)
+    kine    = getphoton(xBd, Q2d, td, phigd, phield, Ed = Ed)
     V3l1, V3l2, V3l3, V3gam1, V3gam2, V3gam3, V3p1, V3p2, V3p3, costgg = kine
     sintel = np.sqrt(1-costel**2)
     cosphe = np.cos(phield)

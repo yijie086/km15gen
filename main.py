@@ -123,7 +123,7 @@ def main(args):
     aao_gen_commands = ['python3', '/work/clas12/sangbaek/aao_gen/gen_wrapper/src/aao_gen.py', '--generator_type', 'rad', 
     '--input_filename_rad', './aao_rad_input.inp', '--input_filename_norad', './aao_norad_input.inp',
     '--flag_ehel', '1', '--ebeam', '{:.3f}'.format(Ed), '--q2min', '{:.3f}'.format(Q2min), '--q2max', '{:.3f}'.format(Q2max),
-    '--epmin', '0.1', '--epmax', '10.604', '--fmcall', '1.0', '--boso', '1',
+    '--epmin', '0.1', '--epmax', '{:.3f}'.format(Ed), '--fmcall', '1.0', '--boso', '1',
     '--seed', '0', '--trig', '{}'.format(trig), '--epirea', '1', '--physics_model_rad', '5',
     '--int_region', '.20 .12 .20 .20', '--npart_rad', '4', '--sigr_max_mult', '0.0',
     '--sigr_max', '0.005', '--model_5_min_W', '3.5721', '--rad_emin', '0.005', '--err_max', '0.2',
